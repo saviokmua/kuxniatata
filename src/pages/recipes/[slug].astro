@@ -6,6 +6,7 @@ import { getAllRecipes, type RecipeEntry } from '../../lib/collection';
 import { CATEGORIES } from '../../lib/categories';
 import { formatTime } from '../../lib/format';
 import { slugify } from '../../lib/slug';
+import Comments from '../../components/Comments.astro';
 import { recipeJsonLd } from '../../lib/jsonld';
 
 export async function getStaticPaths() {
@@ -52,4 +53,5 @@ const cookedOn = data.cookedOn.toLocaleDateString('uk-UA', { dateStyle: 'long', 
       </ul>
     )}
   </article>
+  <Comments slug={recipe.id} />
 </Base>

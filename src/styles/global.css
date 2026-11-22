@@ -52,3 +52,13 @@ section + section { margin-top: 40px; }
 .search-form input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font: inherit; }
 .search-form button { padding: 10px 18px; border: 0; border-radius: var(--radius); background: var(--accent); color: #fff; font: inherit; cursor: pointer; }
 :root { --pagefind-ui-primary: var(--accent); --pagefind-ui-text: var(--text); --pagefind-ui-background: var(--surface); --pagefind-ui-border: var(--border); --pagefind-ui-font: system-ui, sans-serif; }
+.comments { margin-top: 48px; }
+.comments-list { list-style: none; padding: 0; }
+.comment { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-block: 10px; }
+.comment p { margin: 4px 0; }
+.comment-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.comment-form textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font: inherit; }
+.comment-error { color: #c0392b; min-height: 1.4em; margin: 4px 0; }
+.primary-button { padding: 10px 18px; border: 0; border-radius: var(--radius); background: var(--accent); color: #fff; font: inherit; cursor: pointer; }
+.primary-button:disabled { opacity: 0.6; }
+.link-button { background: none; border: 0; color: var(--accent); cursor: pointer; font: inherit; text-decoration: underline; margin-left: 12px; padding: 0; }

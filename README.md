@@ -1,43 +1,61 @@
-# Astro Starter Kit: Minimal
+# Кухня тата
+
+Сайт із рецептами, які я приготував і спробував: [kuxniatata.pp.ua](https://kuxniatata.pp.ua).
+Astro + Markdown, пошук Pagefind, коментарі на Supabase з входом через Google.
+
+## Розробка
+
+Потрібен Node.js ≥ 22.23.4 (див. `.node-version`).
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev      # http://localhost:4321 (пошук працює лише після npm run build)
+npm test         # тести
+npm run build    # збірка в dist/ + індекс пошуку
+npm run preview  # перегляд збірки
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Як додати рецепт
 
-## 🚀 Project Structure
+Створіть файл `src/content/recipes/<назва-латиницею>.md` і покладіть поруч фото (`.jpg`/`.png`/`.webp`).
+Назва файлу стає адресою: `/recipes/<назва-латиницею>/`.
 
-Inside of your Astro project, you'll see the following folders and files:
+```md
+---
+title: Борщ з яловичиною
+description: Класичний червоний борщ.
+image: ./borsch.jpg
+category: supy            # supy | osnovni | vypichka | deserty | zakusky | napoi
+tags: [Українська кухня, Обід]   # необов'язково
+time: 150                 # хвилин
+servings: 6
+cookedOn: 2026-10-12
+ingredients:
+  - Яловичина на кістці — 600 г
+  - Буряк — 2 шт.
+notes: Що вийшло і що змінити наступного разу.   # необов'язково
+---
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+1. Перший крок.
+2. Другий крок.
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Нова категорія: додайте її в `src/lib/categories.ts`.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Коментарі (одноразове налаштування)
 
-Any static assets, like images, can be placed in the `public/` directory.
+Коментарі зберігаються в Supabase, вхід через Google. Без налаштування сайт працює, а замість коментарів
+показується «Коментарі тимчасово недоступні».
 
-## 🧞 Commands
+1. Створіть безкоштовний проєкт на [supabase.com](https://supabase.com).
+2. У **SQL Editor** виконайте вміст `supabase/schema.sql`.
+3. Створіть OAuth-клієнт Google: [Google Cloud Console](https://console.cloud.google.com) → *APIs & Services* → *Credentials* → *Create credentials* → *OAuth client ID* (тип *Web application*).
+   У *Authorized redirect URIs* вкажіть адресу з Supabase: *Authentication → Providers → Google* (вигляд `https://<id>.supabase.co/auth/v1/callback`).
+4. У Supabase → *Authentication → Providers → Google* увімкніть провайдера й вставте Client ID та Client Secret.
+5. У Supabase → *Authentication → URL Configuration*: **Site URL** = `https://kuxniatata.pp.ua`, у **Redirect URLs** додайте
+   `https://kuxniatata.pp.ua/**` і `http://localhost:4321/**`.
+6. Скопіюйте з *Project Settings → API* значення **Project URL** і **anon public key** у файл `.env` (за зразком `.env.example`).
+   Це публічні ключі: безпеку забезпечують правила доступу в базі (RLS), а не секретність ключа.
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Видалити будь-який коментар може власник сайту через Supabase → *Table Editor → comments*.
+Автор може видалити лише свій коментар. Ім'я й аватар беруться з профілю Google на боці бази; частота — не більше одного коментаря на 30 секунд.
