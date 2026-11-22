@@ -6,6 +6,7 @@ import { getAllRecipes, type RecipeEntry } from '../../lib/collection';
 import { CATEGORIES } from '../../lib/categories';
 import { formatTime } from '../../lib/format';
 import { slugify } from '../../lib/slug';
+import { recipeJsonLd } from '../../lib/jsonld';
 
 export async function getStaticPaths() {
   const recipes = await getAllRecipes();
@@ -17,9 +18,10 @@ const { recipe } = Astro.props;
 const { data } = recipe;
 const { Content } = await render(recipe);
 const og = await getImage({ src: data.image, width: 1200 });
+const jsonLd = recipeJsonLd(recipe, new URL(og.src, Astro.site).href);
 const cookedOn = data.cookedOn.toLocaleDateString('uk-UA', { dateStyle: 'long', timeZone: 'UTC' });
 ---
-<Base title={data.title} description={data.description} image={og.src}>
+<Base title={data.title} description={data.description} image={og.src} jsonLd={jsonLd}>
   <article data-pagefind-body>
     <p class="meta"><a href={`/category/${data.category}/`}>{CATEGORIES[data.category]}</a></p>
     <h1 data-pagefind-meta="title">{data.title}</h1>
