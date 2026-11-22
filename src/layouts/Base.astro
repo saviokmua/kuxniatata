@@ -1,0 +1,39 @@
+---
+import Header from '../components/Header.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  canonical?: string;
+  jsonLd?: object;
+}
+const { title, description, image, canonical, jsonLd } = Astro.props;
+const canonicalUrl = new URL(canonical ?? Astro.url.pathname, Astro.site).href;
+const imageUrl = image ? new URL(image, Astro.site).href : undefined;
+const fullTitle = title === 'Кухня тата' ? title : `${title} — Кухня тата`;
+---
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title="Кухня тата" href="/rss.xml" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    {imageUrl && <meta property="og:image" content={imageUrl} />}
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <slot name="head" />
+  </head>
+  <body>
+    <Header />
+    <main class="container"><slot /></main>
+  </body>
+</html>
