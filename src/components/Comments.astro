@@ -1,0 +1,127 @@
+---
+interface Props { slug: string }
+const { slug } = Astro.props;
+---
+<section class="comments" id="comments" data-slug={slug} data-pagefind-ignore>
+  <h2>Коментарі</h2>
+  <div class="comments-status" role="status">Завантаження коментарів…</div>
+  <ul class="comments-list"></ul>
+  <div class="comments-auth"></div>
+</section>
+
+<script>
+  import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+  import { deleteComment, loadComments, postComment, validateComment, type Comment } from '../lib/comments';
+
+  const root = document.querySelector<HTMLElement>('#comments')!;
+  const slug = root.dataset.slug!;
+  const status = root.querySelector<HTMLElement>('.comments-status')!;
+  const list = root.querySelector<HTMLElement>('.comments-list')!;
+  const auth = root.querySelector<HTMLElement>('.comments-auth')!;
+
+  const url = import.meta.env.PUBLIC_SUPABASE_URL;
+  const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+  const unavailable = () => {
+    status.textContent = 'Коментарі тимчасово недоступні.';
+    list.replaceChildren();
+    auth.replaceChildren();
+  };
+
+  const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string, cls?: string) => {
+    const node = document.createElement(tag);
+    if (text !== undefined) node.textContent = text;
+    if (cls) node.className = cls;
+    return node;
+  };
+
+  async function init() {
+    if (!url || !key) return unavailable();
+    const client: SupabaseClient = createClient(url, key);
+    const render = async () => {
+      const { data: sessionData } = await client.auth.getSession();
+      const userId = sessionData.session?.user.id;
+      const comments = await loadComments(client, slug);
+      status.textContent = comments.length === 0 ? 'Поки що коментарів немає.' : '';
+      list.replaceChildren(...comments.map((c) => renderComment(c, userId, client, render)));
+      renderAuth(client, Boolean(userId), render);
+    };
+    try {
+      await render();
+      client.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') render().catch(unavailable);
+      });
+    } catch {
+      unavailable();
+    }
+  }
+
+  function renderComment(c: Comment, userId: string | undefined, client: SupabaseClient, refresh: () => Promise<void>) {
+    const li = el('li', undefined, 'comment');
+    const head = el('p', undefined, 'comment-head');
+    head.append(el('strong', c.author_name), ' ', el('span', new Date(c.created_at).toLocaleDateString('uk-UA'), 'meta'));
+    li.append(head, el('p', c.body, 'comment-body'));
+    if (userId && c.user_id === userId) {
+      const del = el('button', 'Видалити', 'link-button');
+      del.type = 'button';
+      del.addEventListener('click', async () => {
+        try {
+          await deleteComment(client, c.id);
+          await refresh();
+        } catch {
+          status.textContent = 'Не вдалося видалити коментар.';
+        }
+      });
+      li.append(del);
+    }
+    return li;
+  }
+
+  function renderAuth(client: SupabaseClient, signedIn: boolean, refresh: () => Promise<void>) {
+    auth.replaceChildren();
+    if (!signedIn) {
+      const btn = el('button', 'Увійти через Google, щоб залишити коментар', 'primary-button');
+      btn.type = 'button';
+      btn.addEventListener('click', () =>
+        client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.href } }),
+      );
+      auth.append(btn);
+      return;
+    }
+    const form = el('form', undefined, 'comment-form');
+    const textarea = el('textarea');
+    textarea.rows = 4;
+    textarea.maxLength = 2000;
+    textarea.placeholder = 'Ваш коментар…';
+    textarea.setAttribute('aria-label', 'Ваш коментар');
+    const error = el('p', undefined, 'comment-error');
+    const submit = el('button', 'Надіслати', 'primary-button');
+    submit.type = 'submit';
+    const out = el('button', 'Вийти', 'link-button');
+    out.type = 'button';
+    out.addEventListener('click', () => client.auth.signOut());
+    form.append(textarea, error, submit, out);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = validateComment(textarea.value);
+      if (!v.ok) {
+        error.textContent = v.error;
+        return;
+      }
+      submit.disabled = true;
+      try {
+        await postComment(client, slug, v.body);
+        textarea.value = '';
+        error.textContent = '';
+        await refresh();
+      } catch (err) {
+        error.textContent = err instanceof Error && err.message ? err.message : 'Не вдалося надіслати коментар.';
+      } finally {
+        submit.disabled = false;
+      }
+    });
+    auth.append(form);
+  }
+
+  init();
+</script>

@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import RecipeCard from '../../components/RecipeCard.astro';
+import { getAllRecipes, type RecipeEntry } from '../../lib/collection';
+import { groupByCategory } from '../../lib/recipes';
+import { CATEGORIES, type CategoryId } from '../../lib/categories';
+
+export async function getStaticPaths() {
+  const groups = groupByCategory(await getAllRecipes());
+  return [...groups.entries()]
+    .filter(([, recipes]) => recipes.length > 0)
+    .map(([id, recipes]) => ({ params: { category: id }, props: { id, recipes } }));
+}
+
+interface Props { id: CategoryId; recipes: RecipeEntry[] }
+const { id, recipes } = Astro.props;
+const name = CATEGORIES[id];
+---
+<Base title={name} description={`Рецепти в категорії «${name}».`}>
+  <h1>{name}</h1>
+  <ul class="grid">{recipes.map((recipe) => <RecipeCard recipe={recipe} />)}</ul>
+</Base>

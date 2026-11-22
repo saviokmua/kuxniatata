@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import RecipeCard from '../components/RecipeCard.astro';
+import { getAllRecipes } from '../lib/collection';
+import { groupByCategory } from '../lib/recipes';
+import { CATEGORIES } from '../lib/categories';
+import { slugify } from '../lib/slug';
+
+const recipes = await getAllRecipes();
+const groups = groupByCategory(recipes);
+const categories = [...groups.entries()].filter(([, list]) => list.length > 0);
+---
+<Base title="Кухня тата" description="Рецепти, які я приготував і перевірив на власній кухні.">
+  <h1>Кухня тата</h1>
+  <p class="lead">Рецепти, які я приготував і перевірив на власній кухні.</p>
+  <form class="search-form" action="/search/" method="get" role="search">
+    <input type="search" name="q" placeholder="Знайти рецепт або інгредієнт…" aria-label="Пошук рецептів" required />
+    <button type="submit">Шукати</button>
+  </form>
+  <ul class="chips" aria-label="Категорії">
+    {categories.map(([id, list]) => (
+      <li><a class="chip" href={`/category/${id}/`}>{CATEGORIES[id]} ({list.length})</a></li>
+    ))}
+  </ul>
+  <section>
+    <h2>Свіжі рецепти</h2>
+    <ul class="grid">{recipes.slice(0, 12).map((recipe) => <RecipeCard recipe={recipe} />)}</ul>
+  </section>
+</Base>

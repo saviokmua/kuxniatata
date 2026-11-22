@@ -1,0 +1,25 @@
+{
+  "name": "kuxniatata",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.6",
+    "@supabase/supabase-js": "^2.119.2",
+    "astro": "^7.4.13",
+    "pagefind": "^1.6.0"
+  },
+  "devDependencies": {
+    "vitest": "^5.1.1"
+  }
+}

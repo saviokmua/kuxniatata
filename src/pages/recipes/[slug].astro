@@ -1,0 +1,57 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getAllRecipes, type RecipeEntry } from '../../lib/collection';
+import { CATEGORIES } from '../../lib/categories';
+import { formatTime } from '../../lib/format';
+import { slugify } from '../../lib/slug';
+import Comments from '../../components/Comments.astro';
+import { recipeJsonLd } from '../../lib/jsonld';
+
+export async function getStaticPaths() {
+  const recipes = await getAllRecipes();
+  return recipes.map((recipe) => ({ params: { slug: recipe.id }, props: { recipe } }));
+}
+
+interface Props { recipe: RecipeEntry }
+const { recipe } = Astro.props;
+const { data } = recipe;
+const { Content } = await render(recipe);
+const og = await getImage({ src: data.image, width: 1200 });
+const jsonLd = recipeJsonLd(recipe, new URL(og.src, Astro.site).href);
+const cookedOn = data.cookedOn.toLocaleDateString('uk-UA', { dateStyle: 'long', timeZone: 'UTC' });
+---
+<Base title={data.title} description={data.description} image={og.src} jsonLd={jsonLd}>
+  <article data-pagefind-body>
+    <p class="meta"><a href={`/category/${data.category}/`}>{CATEGORIES[data.category]}</a></p>
+    <h1 data-pagefind-meta="title">{data.title}</h1>
+    <p class="lead">{data.description}</p>
+    <Image class="recipe-hero" src={data.image} alt={data.title} width={960} loading="eager" data-pagefind-meta="image[src]" />
+    <div class="recipe-facts">
+      <span>⏱ {formatTime(data.time)}</span>
+      <span>🍽 {data.servings} порц.</span>
+      <span>📅 Готував {cookedOn}</span>
+    </div>
+    <section>
+      <h2>Інгредієнти</h2>
+      <ul class="prose">{data.ingredients.map((item) => <li>{item}</li>)}</ul>
+    </section>
+    <section class="prose">
+      <h2>Приготування</h2>
+      <Content />
+    </section>
+    {data.notes && (
+      <section>
+        <h2>Мої нотатки</h2>
+        <p class="notes">{data.notes}</p>
+      </section>
+    )}
+    {data.tags.length > 0 && (
+      <ul class="chips" aria-label="Теги">
+        {data.tags.map((tag) => <li><a class="chip" href={`/tag/${slugify(tag)}/`}>#{tag}</a></li>)}
+      </ul>
+    )}
+  </article>
+  <Comments slug={recipe.id} />
+</Base>

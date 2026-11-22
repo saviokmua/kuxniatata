@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import RecipeCard from '../../components/RecipeCard.astro';
+import { getAllRecipes, type RecipeEntry } from '../../lib/collection';
+import { getTagIndex } from '../../lib/recipes';
+
+export async function getStaticPaths() {
+  const index = getTagIndex(await getAllRecipes());
+  return [...index.values()].map((tag) => ({ params: { tag: tag.slug }, props: { name: tag.name, recipes: tag.recipes } }));
+}
+
+interface Props { name: string; recipes: RecipeEntry[] }
+const { name, recipes } = Astro.props;
+---
+<Base title={`#${name}`} description={`Рецепти з тегом «${name}».`}>
+  <h1>#{name}</h1>
+  <ul class="grid">{recipes.map((recipe) => <RecipeCard recipe={recipe} />)}</ul>
+</Base>

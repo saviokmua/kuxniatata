@@ -1,0 +1,17 @@
+---
+import { Image } from 'astro:assets';
+import type { RecipeEntry } from '../lib/collection';
+import { formatTime } from '../lib/format';
+
+interface Props { recipe: RecipeEntry }
+const { recipe } = Astro.props;
+---
+<li class="card">
+  <a href={`/recipes/${recipe.id}/`}>
+    <Image src={recipe.data.image} alt={recipe.data.title} width={500} loading="lazy" />
+    <div class="card-body">
+      <p class="card-title">{recipe.data.title}</p>
+      <p class="card-meta">{formatTime(recipe.data.time)} · {recipe.data.servings} порц.</p>
+    </div>
+  </a>
+</li>
