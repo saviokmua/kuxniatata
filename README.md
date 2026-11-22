@@ -59,3 +59,15 @@ notes: Що вийшло і що змінити наступного разу.  
 
 Видалити будь-який коментар може власник сайту через Supabase → *Table Editor → comments*.
 Автор може видалити лише свій коментар. Ім'я й аватар беруться з профілю Google на боці бази; частота — не більше одного коментаря на 30 секунд.
+
+## Деплой (GitHub Pages)
+
+Сайт збирається й публікується GitHub Actions при кожному push у `main` (`.github/workflows/deploy.yml`).
+
+1. У репозиторії: **Settings → Pages → Source = GitHub Actions**.
+2. **Settings → Secrets and variables → Actions → Variables**: додайте `PUBLIC_SUPABASE_URL` і `PUBLIC_SUPABASE_ANON_KEY`
+   (це публічні значення, тому *Variables*, а не *Secrets*).
+3. Домен: у реєстратора `.pp.ua` створіть для `kuxniatata.pp.ua` чотири A-записи:
+   `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`.
+   Файл `public/CNAME` уже містить домен. Після перевірки DNS у **Settings → Pages** увімкніть **Enforce HTTPS**.
+4. Щотижневий workflow `supabase-ping.yml` робить запит до Supabase, щоб безкоштовний проєкт не «засинав».
